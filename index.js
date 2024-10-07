@@ -1,31 +1,27 @@
-import express from "express";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
+import express from 'express';
+import dotenv from 'dotenv';
+import connectDB from './db/index.js';
+import userRoutes from './routes/userRoutes.js';
 
-const app = express();
 dotenv.config();
 
-const PORT = process.env.PORT || 7000;
-const MONGOURL = process.env.MONGO_URL;
+connectDB();
 
-mongoose
-  .connect(MONGOURL)
-  .then(() => {
-    console.log("Database is connected successfully");
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  })
-  .catch((error) => console.log(error));
+const app = express();
 
-const userSchema = new mongoose.Schema({
-  name: String,
-  age: Number,
+app.use(express.json());
+
+app.use('/api/users', userRoutes);
+
+app.get('/', (req, res) => {
+  res.send('Welcome to the Node.js MongoDB API');
 });
 
-const UserModel = mongoose.model("user", userSchema);
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
+});
 
-app.get("/getUsers", async(req,res)=>{
-    const userData = await UserModel.find();
-    res.json(userData);
+const PORT = process.env.PORT || 7000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
